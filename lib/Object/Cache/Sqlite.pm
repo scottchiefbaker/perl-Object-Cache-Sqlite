@@ -252,7 +252,7 @@ sub disconnect {
 
 sub DESTROY {
 	my ($self) = @_;
-	$self->disconnect();
+	eval { $self->disconnect() };
 }
 
 1;
