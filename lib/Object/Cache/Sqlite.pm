@@ -9,6 +9,8 @@ use Cpanel::JSON::XS;
 
 our $VERSION = 'v0.1.1';
 
+my $JSON = Cpanel::JSON::XS->new->utf8->allow_nonref;
+
 sub new {
 	my ($class, %args) = @_;
 
@@ -64,22 +66,13 @@ sub _init_db {
 
 sub _store_value {
 	my ($self, $value) = @_;
-
-	my $json = Cpanel::JSON::XS->new->utf8->allow_nonref;
-
-	return $json->encode($value);
+	return $JSON->encode($value);
 }
 
 sub _load_value {
 	my ($self, $data) = @_;
-
-	if (!defined($data)) {
-		return undef;
-	}
-
-	my $json = Cpanel::JSON::XS->new->utf8->allow_nonref;
-
-	return eval { $json->decode($data) };
+	return undef unless defined $data;
+	return eval { $JSON->decode($data) };
 }
 
 sub get {
