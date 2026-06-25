@@ -1,8 +1,8 @@
 Revision history for Object-Cache-Sqlite
 
-0.1.1 2024-01-01
+0.1.1 2026-06-25
     - Initial release
     - SQLite-based object cache
     - Automatic expiration
-    - Storable and JSON serialization
+    - Cpanel::JSON::XS serialization
     - Cross-platform support
