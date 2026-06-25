@@ -1,0 +1,49 @@
+# Build artifacts
+Makefile
+Makefile.old
+/blib/
+/build/
+/_build/
+/inc/
+/MYMETA.*
+/pm_to_blib
+
+# XS/C artifacts
+*.o
+*.c
+*.bs
+*.def
+*.so
+*.dylib
+
+# Distribution archives
+*.tar.gz
+*.zip
+
+# Coverate
+/cover_db/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+.idea
+
+# Test artifacts
+*.t.log
+.nytprof/
+nytprof.out
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Misc
+none/
