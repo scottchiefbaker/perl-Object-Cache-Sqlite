@@ -31,16 +31,11 @@ sub _init_db {
 	my ($self) = @_;
 
 	my $opts = {
-		RaiseError => 0,
-		PrintError => 0,
+		RaiseError => 1,
 		AutoCommit => 1,
 	};
 
 	my $dbh = DBI->connect("dbi:SQLite:dbname=$self->{db_file}", '', '', $opts);
-
-	if (!$dbh) {
-		croak("Cannot connect to $self->{db_file}: $DBI::errstr");
-	}
 
 	$self->{dbh} = $dbh;
 
