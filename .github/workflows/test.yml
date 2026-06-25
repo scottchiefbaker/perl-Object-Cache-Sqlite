@@ -18,6 +18,9 @@ jobs:
           - '5.030'
           - '5.040'
 
+    container:
+      image: perldocker/perl-tester:${{ matrix.perl-version }} # https://hub.docker.com/r/perldocker/perl-tester
+
     name: Perl ${{ matrix.perl-version }}
 
     steps:
