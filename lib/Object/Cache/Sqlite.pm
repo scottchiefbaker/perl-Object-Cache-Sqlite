@@ -408,19 +408,10 @@ Returns an arrayref of all non-expired cache keys.
 Deletes all expired entries from the cache. If C<$vacuum> is true (default),
 runs SQLite C<VACUUM> to reclaim space.
 
-=head2 vacuum()
-
-Runs SQLite C<VACUUM> to defragment the database and reclaim disk space.
-
 =head2 empty_cache()
 
 Deletes ALL entries from the cache and runs C<VACUUM>. Returns the number
 of deleted entries.
-
-=head2 init_db()
-
-Initializes the database for the first time. If the database already exists it
-will empty all contents.
 
 =head1 SERIALIZATION
 
@@ -434,7 +425,7 @@ Perl-native binary serialization. Faster and more compact for Perl data structur
 
 =item JSON
 
-Human-readable format. More portable but slower.
+Human-readable format. Supported everywhere but slower.
 
 =back
 

@@ -93,24 +93,15 @@ Returns the number of non-expired entries in the cache.
 
 Returns an arrayref of all non-expired cache keys.
 
-### remove\_expired\_entries($Vacuum)
+### remove\_expired\_entries($vacuum)
 
 Deletes all expired entries from the cache. If `$vacuum` is true (default),
 runs SQLite `VACUUM` to reclaim space.
-
-### vacuum()
-
-Runs SQLite `VACUUM` to defragment the database and reclaim disk space.
 
 ### empty\_cache()
 
 Deletes ALL entries from the cache and runs `VACUUM`. Returns the number
 of deleted entries.
-
-### init\_db()
-
-Initializes the database for the first time. If the database already exists it
-will empty all contents.
 
 ## Serialization
 
@@ -122,7 +113,7 @@ The module supports two serialization formats:
 
 - JSON
 
-    Human-readable format. More portable but slower.
+    Human-readable format. Supported everywhere but slower.
 
 The format is auto-detected based on available modules, with Storable preferred.
 
