@@ -1,0 +1,8 @@
+Revision history for Object-Cache-Sqlite
+
+0.1 2024-01-01
+    - Initial release
+    - SQLite-based object cache
+    - Automatic expiration
+    - Storable and JSON serialization
+    - Cross-platform support
