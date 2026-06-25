@@ -73,7 +73,9 @@ sub _store_value {
 sub _load_value {
     my ($self, $data) = @_;
 
-    return undef unless defined $data;
+    if (!defined($data)) {
+        return undef;
+    }
 
     my $json = Cpanel::JSON::XS->new->utf8->allow_nonref;
     return eval { $json->decode($data) };
@@ -108,7 +110,9 @@ sub get {
 sub set {
     my ($self, $key, $value, $expires) = @_;
 
-    return 0 unless defined $key;
+    if (!defined($key)) {
+        return 0;
+    }
 
     $expires //= 3600;
 
@@ -123,9 +127,8 @@ sub set {
     my $dbh = $self->{dbh};
     my $now = time();
 
-    my $data = $self->_store_value($value);
-
-    my $sth = $dbh->prepare("REPLACE INTO cache (CreateTime, ExpireTime, Key, Value) VALUES (?, ?, ?, ?)");
+    my $data   = $self->_store_value($value);
+    my $sth    = $dbh->prepare("REPLACE INTO cache (CreateTime, ExpireTime, Key, Value) VALUES (?, ?, ?, ?)");
     my $result = $sth->execute($now, $expires, $key, $data);
     $sth->finish();
 
