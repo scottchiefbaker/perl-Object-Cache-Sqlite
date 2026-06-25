@@ -23,15 +23,20 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Setup Perl
-        uses: shogo82148/actions-setup-perl@v1
+      - name: perl -V
+        run: perl -V
+      - name: Cache CPAN dependencies
+        uses: actions/cache@v6
         with:
-          perl-version: ${{ matrix.perl-version }}
-
+          path: ~/.cpanm
+          key: ${{ runner.os }}-cpan-${{ hashFiles('**/Makefile.PL', '**/cpanfile') }}
+          restore-keys: |
+            ${{ runner.os }}-cpan-
       - name: Install Dependencies
-        run: |
-          perl Makefile.PL
-          cpanm --installdeps .
-
-      - name: Run Tests
+        run: cpanm -v --notest --installdeps .
+      - name: perl Makefile.PL
+        run: perl Makefile.PL
+      - name: make
+        run: make
+      - name: Regular tests
         run: make test
