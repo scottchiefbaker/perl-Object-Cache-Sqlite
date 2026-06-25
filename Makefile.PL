@@ -17,20 +17,18 @@ WriteMakefile(
         'Test::More' => '0.96',
     },
     PREREQ_PM => {
-        'DBI'          => '0',
-        'DBD::SQLite'  => '0',
-        'JSON'         => '0',
-        'Storable'     => '0',
-        'Carp'         => '0',
-        'File::Spec'   => '0',
+        'DBI'               => '0',
+        'DBD::SQLite'       => '0',
+        'Cpanel::JSON::XS'  => '0',
+        'Carp'              => '0',
     },
     META_MERGE => {
         'meta-spec' => { version => 2 },
         resources   => {
             repository => {
                 type => 'git',
-                url  => 'https://github.com/scottchiefbaker/object-cache-sqlite.git',
-                web  => 'https://github.com/scottchiefbaker/object-cache-sqlite',
+                url  => 'https://github.com/scottchiefbaker/perl-object-cache-sqlite.git',
+                web  => 'https://github.com/scottchiefbaker/perl-object-cache-sqlite',
             },
         },
     },
