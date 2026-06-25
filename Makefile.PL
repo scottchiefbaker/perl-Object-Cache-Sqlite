@@ -27,8 +27,8 @@ WriteMakefile(
         resources   => {
             repository => {
                 type => 'git',
-                url  => 'https://github.com/scottchiefbaker/perl-object-cache-sqlite.git',
-                web  => 'https://github.com/scottchiefbaker/perl-object-cache-sqlite',
+                url  => 'https://github.com/scottchiefbaker/perl-Object-Cache-Sqlite.git',
+                web  => 'https://github.com/scottchiefbaker/perl-Object-Cache-Sqlite',
             },
         },
     },
