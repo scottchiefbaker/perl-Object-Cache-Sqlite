@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile(
     NAME             => 'Object::Cache::Sqlite',
-    AUTHOR           => 'Scott Baker <scott@bakers.me>',
+    AUTHOR           => 'Scott Baker <scott@perturb.org>',
     VERSION_FROM     => 'lib/Object/Cache/Sqlite.pm',
     ABSTRACT_FROM    => 'lib/Object/Cache/Sqlite.pm',
     LICENSE          => 'mit',

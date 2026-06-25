@@ -1,6 +1,6 @@
 Revision history for Object-Cache-Sqlite
 
-0.1 2024-01-01
+0.1.1 2024-01-01
     - Initial release
     - SQLite-based object cache
     - Automatic expiration

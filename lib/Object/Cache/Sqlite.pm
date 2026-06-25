@@ -9,7 +9,7 @@ use File::Spec;
 use Storable qw(nstore retrieve);
 use JSON;
 
-our $VERSION = '0.1';
+our $VERSION = 'v0.1.1';
 
 sub new {
     my ($class, %args) = @_;

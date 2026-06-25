@@ -4,5 +4,7 @@ t/02-expiry.t
 t/03-serialization.t
 Makefile.PL
 README.md
+release-notes.md
 Changes
 LICENSE
+MANIFEST
