@@ -5,9 +5,7 @@ use 5.014;
 
 use Carp qw(croak);
 use DBI;
-use File::Spec;
-use Storable qw(nstore retrieve);
-use JSON;
+use Cpanel::JSON::XS;
 
 our $VERSION = 'v0.1.1';
 
@@ -18,11 +16,9 @@ sub new {
         or croak "db_file is required";
 
     my $self = {
-        db_file    => $db_file,
-        dbh        => undef,
-        silent     => delete $args{silent}     // 1,
-        mode       => delete $args{mode}       // '',
-        serialized => delete $args{serialized} // 1,
+        db_file => $db_file,
+        dbh     => undef,
+        silent  => delete $args{silent} // 1,
     };
 
     bless $self, $class;
@@ -67,42 +63,11 @@ sub _init_db {
     return 1;
 }
 
-sub _detect_mode {
-    my ($self) = @_;
-
-    return $self->{mode} if $self->{mode};
-
-    if ($self->{serialized}) {
-        return 'storable';
-    }
-
-    return 'json';
-}
-
 sub _store_value {
     my ($self, $value) = @_;
 
-    my $mode = $self->_detect_mode();
-
-    if ($mode eq 'storable') {
-        my $tmp = File::Spec->catfile(File::Spec->tmpdir(), "cache_$$\_$^T");
-        my $ref = ref($value) ? $value : \$value;
-        nstore($ref, $tmp) or croak "Cannot store value: $!";
-        open my $fh, '<', $tmp or croak "Cannot read temp file: $!";
-        binmode $fh;
-        local $/;
-        my $data = <$fh>;
-        close $fh;
-        unlink $tmp;
-        return $data;
-    }
-    elsif ($mode eq 'json') {
-        my $json = JSON->new->utf8->allow_nonref;
-        return $json->encode($value);
-    }
-    else {
-        croak "Unknown serialization mode: $mode";
-    }
+    my $json = Cpanel::JSON::XS->new->utf8->allow_nonref;
+    return $json->encode($value);
 }
 
 sub _load_value {
@@ -110,28 +75,8 @@ sub _load_value {
 
     return undef unless defined $data;
 
-    my $mode = $self->_detect_mode();
-
-    if ($mode eq 'storable') {
-        my $tmp = File::Spec->catfile(File::Spec->tmpdir(), "cache_read_$$\_$^T");
-        open my $fh, '>', $tmp or croak "Cannot write temp file: $!";
-        binmode $fh;
-        print $fh $data;
-        close $fh;
-        my $value = eval { retrieve($tmp) };
-        unlink $tmp;
-        if (ref($value) eq 'SCALAR') {
-            return $$value;
-        }
-        return $value;
-    }
-    elsif ($mode eq 'json') {
-        my $json = JSON->new->utf8->allow_nonref;
-        return eval { $json->decode($data) };
-    }
-    else {
-        croak "Unknown serialization mode: $mode";
-    }
+    my $json = Cpanel::JSON::XS->new->utf8->allow_nonref;
+    return eval { $json->decode($data) };
 }
 
 sub get {
@@ -343,8 +288,8 @@ Object::Cache::Sqlite - SQLite-based object cache with automatic expiration
 =head1 DESCRIPTION
 
 Object::Cache::Sqlite provides a simple, fast object cache backed by SQLite.
-Data is automatically expired based on TTL values. The module supports both
-Storable and JSON serialization formats.
+Data is automatically expired based on TTL values. Uses Cpanel::JSON::XS
+for fast, portable serialization.
 
 =head1 CONSTRUCTOR
 
@@ -367,10 +312,6 @@ Optional arguments:
 =item silent
 
 If true, suppresses initialization messages. Default: 1
-
-=item mode
-
-Serialization format: 'storable' or 'json'. Default: auto-detect (prefers Storable)
 
 =back
 
@@ -412,24 +353,6 @@ runs SQLite C<VACUUM> to reclaim space.
 
 Deletes ALL entries from the cache and runs C<VACUUM>. Returns the number
 of deleted entries.
-
-=head1 SERIALIZATION
-
-The module supports two serialization formats:
-
-=over 4
-
-=item Storable (default)
-
-Perl-native binary serialization. Faster and more compact for Perl data structures.
-
-=item JSON
-
-Human-readable format. Supported everywhere but slower.
-
-=back
-
-The format is auto-detected based on available modules, with Storable preferred.
 
 =head1 EXPIRATION
 
