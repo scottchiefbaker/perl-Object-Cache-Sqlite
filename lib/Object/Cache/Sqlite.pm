@@ -10,248 +10,248 @@ use Cpanel::JSON::XS;
 our $VERSION = 'v0.1.1';
 
 sub new {
-    my ($class, %args) = @_;
+	my ($class, %args) = @_;
 
-    my $db_file = delete $args{db_file}
-        or croak "db_file is required";
+	my $db_file = delete $args{db_file}
+		or croak "db_file is required";
 
-    my $self = {
-        db_file => $db_file,
-        dbh     => undef,
-        silent  => delete $args{silent} // 1,
-    };
+	my $self = {
+		db_file => $db_file,
+		dbh     => undef,
+		silent  => delete $args{silent} // 1,
+	};
 
-    bless $self, $class;
-    $self->_init_db();
-    return $self;
+	bless $self, $class;
+	$self->_init_db();
+	return $self;
 }
 
 sub _init_db {
-    my ($self) = @_;
+	my ($self) = @_;
 
-    my $dbh = DBI->connect(
-        "dbi:SQLite:dbname=$self->{db_file}",
-        '', '',
-        {
-            RaiseError => 0,
-            PrintError => 0,
-            AutoCommit => 1,
-        },
-    ) or croak "Cannot connect to $self->{db_file}: $DBI::errstr";
+	my $dbh = DBI->connect(
+		"dbi:SQLite:dbname=$self->{db_file}",
+		'', '',
+		{
+			RaiseError => 0,
+			PrintError => 0,
+			AutoCommit => 1,
+		},
+	) or croak "Cannot connect to $self->{db_file}: $DBI::errstr";
 
-    $self->{dbh} = $dbh;
+	$self->{dbh} = $dbh;
 
-    my $sth = $dbh->prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='cache'");
-    $sth->execute();
-    my $table_exists = $sth->fetchrow_array();
-    $sth->finish();
+	my $sth = $dbh->prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='cache'");
+	$sth->execute();
+	my $table_exists = $sth->fetchrow_array();
+	$sth->finish();
 
-    if (!$table_exists) {
-        $dbh->do("CREATE TABLE cache (
-            CreateTime  INT,
-            ExpireTime  INT,
-            Key         VARCHAR(255) PRIMARY KEY UNIQUE,
-            Value       BLOB
-        )");
-        $dbh->do("CREATE INDEX ExpireTimeIndex ON cache (ExpireTime)");
+	if (!$table_exists) {
+		$dbh->do("CREATE TABLE cache (
+			CreateTime  INT,
+			ExpireTime  INT,
+			Key         VARCHAR(255) PRIMARY KEY UNIQUE,
+			Value       BLOB
+			)");
+		$dbh->do("CREATE INDEX ExpireTimeIndex ON cache (ExpireTime)");
 
-        if (!$self->{silent}) {
-            warn "Created cache table in $self->{db_file}\n";
-        }
-    }
+		if (!$self->{silent}) {
+			warn "Created cache table in $self->{db_file}\n";
+		}
+	}
 
-    return 1;
+	return 1;
 }
 
 sub _store_value {
-    my ($self, $value) = @_;
+	my ($self, $value) = @_;
 
-    my $json = Cpanel::JSON::XS->new->utf8->allow_nonref;
-    return $json->encode($value);
+	my $json = Cpanel::JSON::XS->new->utf8->allow_nonref;
+	return $json->encode($value);
 }
 
 sub _load_value {
-    my ($self, $data) = @_;
+	my ($self, $data) = @_;
 
-    if (!defined($data)) {
-        return undef;
-    }
+	if (!defined($data)) {
+		return undef;
+	}
 
-    my $json = Cpanel::JSON::XS->new->utf8->allow_nonref;
-    return eval { $json->decode($data) };
+	my $json = Cpanel::JSON::XS->new->utf8->allow_nonref;
+	return eval { $json->decode($data) };
 }
 
 sub get {
-    my ($self, $key) = @_;
+	my ($self, $key) = @_;
 
-    return undef unless defined $key;
+	return undef unless defined $key;
 
-    my $dbh = $self->{dbh};
-    my $now = time();
+	my $dbh = $self->{dbh};
+	my $now = time();
 
-    my $sth = $dbh->prepare("SELECT Value, ExpireTime FROM cache WHERE Key = ?");
-    $sth->execute($key);
-    my ($value, $expire_time) = $sth->fetchrow_array();
-    $sth->finish();
+	my $sth = $dbh->prepare("SELECT Value, ExpireTime FROM cache WHERE Key = ?");
+	$sth->execute($key);
+	my ($value, $expire_time) = $sth->fetchrow_array();
+	$sth->finish();
 
-    if (!defined $value) {
-        return undef;
-    }
+	if (!defined $value) {
+		return undef;
+	}
 
-    if (defined $expire_time && $expire_time < $now) {
-        $self->delete($key);
-        $self->remove_expired_entries(0);
-        return undef;
-    }
+	if (defined $expire_time && $expire_time < $now) {
+		$self->delete($key);
+		$self->remove_expired_entries(0);
+		return undef;
+	}
 
-    return $self->_load_value($value);
+	return $self->_load_value($value);
 }
 
 sub set {
-    my ($self, $key, $value, $expires) = @_;
+	my ($self, $key, $value, $expires) = @_;
 
-    if (!defined($key)) {
-        return 0;
-    }
+	if (!defined($key)) {
+		return 0;
+	}
 
-    $expires //= 3600;
+	$expires //= 3600;
 
-    if ($expires < 100000) {
-        $expires = time() + $expires;
-    }
+	if ($expires < 100000) {
+		$expires = time() + $expires;
+	}
 
-    if ($expires < time()) {
-        return undef;
-    }
+	if ($expires < time()) {
+		return undef;
+	}
 
-    my $dbh = $self->{dbh};
-    my $now = time();
+	my $dbh = $self->{dbh};
+	my $now = time();
 
-    my $data   = $self->_store_value($value);
-    my $sth    = $dbh->prepare("REPLACE INTO cache (CreateTime, ExpireTime, Key, Value) VALUES (?, ?, ?, ?)");
-    my $result = $sth->execute($now, $expires, $key, $data);
-    $sth->finish();
+	my $data   = $self->_store_value($value);
+	my $sth    = $dbh->prepare("REPLACE INTO cache (CreateTime, ExpireTime, Key, Value) VALUES (?, ?, ?, ?)");
+	my $result = $sth->execute($now, $expires, $key, $data);
+	$sth->finish();
 
-    return $result ? 1 : 0;
+	return $result ? 1 : 0;
 }
 
 sub delete {
-    my ($self, $key) = @_;
+	my ($self, $key) = @_;
 
-    return 0 unless defined $key;
+	return 0 unless defined $key;
 
-    my $dbh = $self->{dbh};
-    my $sth = $dbh->prepare("DELETE FROM cache WHERE Key = ?");
-    my $result = $sth->execute($key);
-    $sth->finish();
+	my $dbh = $self->{dbh};
+	my $sth = $dbh->prepare("DELETE FROM cache WHERE Key = ?");
+	my $result = $sth->execute($key);
+	$sth->finish();
 
-    return $result ? 1 : 0;
+	return $result ? 1 : 0;
 }
 
 sub cached_item_count {
-    my ($self) = @_;
+	my ($self) = @_;
 
-    my $dbh = $self->{dbh};
-    my $now = time();
+	my $dbh = $self->{dbh};
+	my $now = time();
 
-    my $sth = $dbh->prepare("SELECT COUNT(*) FROM cache WHERE ExpireTime >= ? OR ExpireTime IS NULL");
-    $sth->execute($now);
-    my ($count) = $sth->fetchrow_array();
-    $sth->finish();
+	my $sth = $dbh->prepare("SELECT COUNT(*) FROM cache WHERE ExpireTime >= ? OR ExpireTime IS NULL");
+	$sth->execute($now);
+	my ($count) = $sth->fetchrow_array();
+	$sth->finish();
 
-    return $count // 0;
+	return $count // 0;
 }
 
 sub cached_item_keys {
-    my ($self) = @_;
+	my ($self) = @_;
 
-    my $dbh = $self->{dbh};
-    my $now = time();
+	my $dbh = $self->{dbh};
+	my $now = time();
 
-    my $sth = $dbh->prepare("SELECT Key FROM cache WHERE ExpireTime >= ? OR ExpireTime IS NULL");
-    $sth->execute($now);
-    my @keys;
-    while (my ($key) = $sth->fetchrow_array()) {
-        push @keys, $key;
-    }
-    $sth->finish();
+	my $sth = $dbh->prepare("SELECT Key FROM cache WHERE ExpireTime >= ? OR ExpireTime IS NULL");
+	$sth->execute($now);
+	my @keys;
+	while (my ($key) = $sth->fetchrow_array()) {
+		push @keys, $key;
+	}
+	$sth->finish();
 
-    return \@keys;
+	return \@keys;
 }
 
 sub remove_expired_entries {
-    my ($self, $vacuum) = @_;
+	my ($self, $vacuum) = @_;
 
-    $vacuum //= 1;
+	$vacuum //= 1;
 
-    my $dbh = $self->{dbh};
-    my $now = time();
+	my $dbh = $self->{dbh};
+	my $now = time();
 
-    my $sth = $dbh->prepare("DELETE FROM cache WHERE ExpireTime < ?");
-    $sth->execute($now);
-    my $deleted = $sth->rows;
-    $sth->finish();
+	my $sth = $dbh->prepare("DELETE FROM cache WHERE ExpireTime < ?");
+	$sth->execute($now);
+	my $deleted = $sth->rows;
+	$sth->finish();
 
-    if ($vacuum && $deleted > 0) {
-        $self->vacuum();
-    }
+	if ($vacuum && $deleted > 0) {
+		$self->vacuum();
+	}
 
-    return $deleted > 0 ? 1 : 0;
+	return $deleted > 0 ? 1 : 0;
 }
 
 sub vacuum {
-    my ($self) = @_;
+	my ($self) = @_;
 
-    my $dbh = $self->{dbh};
-    $dbh->do("VACUUM");
+	my $dbh = $self->{dbh};
+	$dbh->do("VACUUM");
 
-    return 1;
+	return 1;
 }
 
 sub empty_cache {
-    my ($self) = @_;
+	my ($self) = @_;
 
-    my $dbh = $self->{dbh};
-    my $sth = $dbh->prepare("DELETE FROM cache");
-    $sth->execute();
-    my $deleted = $sth->rows;
-    $sth->finish();
+	my $dbh = $self->{dbh};
+	my $sth = $dbh->prepare("DELETE FROM cache");
+	$sth->execute();
+	my $deleted = $sth->rows;
+	$sth->finish();
 
-    $self->vacuum();
+	$self->vacuum();
 
-    return $deleted;
+	return $deleted;
 }
 
 sub init_db {
-    my ($self) = @_;
+	my ($self) = @_;
 
-    my $dbh = $self->{dbh};
-    $dbh->do("DROP TABLE IF EXISTS cache");
-    $dbh->do("CREATE TABLE cache (
-        CreateTime  INT,
-        ExpireTime  INT,
-        Key         VARCHAR(255) PRIMARY KEY UNIQUE,
-        Value       BLOB
-    )");
-    $dbh->do("CREATE INDEX ExpireTimeIndex ON cache (ExpireTime)");
+	my $dbh = $self->{dbh};
+	$dbh->do("DROP TABLE IF EXISTS cache");
+	$dbh->do("CREATE TABLE cache (
+		CreateTime  INT,
+		ExpireTime  INT,
+		Key         VARCHAR(255) PRIMARY KEY UNIQUE,
+		Value       BLOB
+		)");
+	$dbh->do("CREATE INDEX ExpireTimeIndex ON cache (ExpireTime)");
 
-    return 1;
+	return 1;
 }
 
 sub disconnect {
-    my ($self) = @_;
+	my ($self) = @_;
 
-    if ($self->{dbh}) {
-        $self->{dbh}->disconnect();
-        $self->{dbh} = undef;
-    }
+	if ($self->{dbh}) {
+		$self->{dbh}->disconnect();
+		$self->{dbh} = undef;
+	}
 
-    return 1;
+	return 1;
 }
 
 sub DESTROY {
-    my ($self) = @_;
-    $self->disconnect();
+	my ($self) = @_;
+	$self->disconnect();
 }
 
 1;
@@ -393,3 +393,5 @@ This is free software; you can redistribute it and/or modify it under
 the terms of the MIT License.
 
 =cut
+
+# vim: tabstop=4 shiftwidth=4 noexpandtab autoindent softtabstop=4
