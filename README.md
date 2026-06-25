@@ -11,17 +11,20 @@ my $cache = Object::Cache::Sqlite->new(
     db_file => '/tmp/cache.sqlite',
 );
 
-# Store a value with 1 hour TTL (default)
-$cache->set('user_123', { name => 'John', email => 'john@example.com' });
+my $scalar   = 42;
+my $list_ref = [ 1, 3, 5, 7, 9 ];
+my $hash_ref = { name => 'John', email => 'john@example.com' };
 
-# Store with custom TTL (5 minutes)
-$cache->set('session_abc', $data, 300);
+# Store some data for 15 minutes
+$cache->set('age'     , $scalar  , time() + 900);
+$cache->set('ids'     , $list_ref, time() + 900);
+$cache->set('user:123', $hash_ref, time() + 900);
 
 # Retrieve a value
-my $user = $cache->get('user_123');
+my $user = $cache->get('user:123');
 
 # Delete a value
-$cache->delete('user_123');
+$cache->delete('user:123');
 
 # Get cache statistics
 my $count = $cache->cached_item_count();
@@ -37,8 +40,8 @@ $cache->empty_cache();
 ## Description
 
 Object::Cache::Sqlite provides a simple, fast object cache backed by SQLite.
-Data is automatically expired based on TTL values. The module supports both
-Storable and JSON serialization formats.
+Data is automatically expired based on TTL values. Uses Cpanel::JSON::XS
+for fast, portable serialization.
 
 ## Constructor
 
@@ -56,14 +59,6 @@ Optional arguments:
 
     If true, suppresses initialization messages. Default: 1
 
-- mode
-
-    Serialization format: 'storable' or 'json'. Default: auto-detect (prefers Storable)
-
-- serialized
-
-    If true, uses Storable for serialization. If false, uses JSON. Default: 1
-
 ## Methods
 
 ### get($key)
@@ -76,8 +71,6 @@ has expired.
 Stores a value in the cache. `$expires` is the time-to-live in seconds.
 If `$expires` is less than 100000, it's treated as relative (seconds from now).
 If `$expires` is 100000 or greater, it's treated as an absolute Unix timestamp.
-
-Default TTL is 3600 seconds (1 hour).
 
 Returns true on success.
 
@@ -102,20 +95,6 @@ runs SQLite `VACUUM` to reclaim space.
 
 Deletes ALL entries from the cache and runs `VACUUM`. Returns the number
 of deleted entries.
-
-## Serialization
-
-The module supports two serialization formats:
-
-- Storable (default)
-
-    Perl-native binary serialization. Faster and more compact for Perl data structures.
-
-- JSON
-
-    Human-readable format. Supported everywhere but slower.
-
-The format is auto-detected based on available modules, with Storable preferred.
 
 ## Expiration
 

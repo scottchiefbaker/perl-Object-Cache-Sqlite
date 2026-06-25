@@ -257,33 +257,36 @@ Object::Cache::Sqlite - SQLite-based object cache with automatic expiration
 
 =head1 SYNOPSIS
 
-    use Object::Cache::Sqlite;
+  use Object::Cache::Sqlite;
 
-    my $cache = Object::Cache::Sqlite->new(
-        db_file => '/tmp/cache.sqlite',
-    );
+  my $cache = Object::Cache::Sqlite->new(
+      db_file => '/tmp/cache.sqlite',
+  );
 
-    # Store a value with 1 hour TTL (default)
-    $cache->set('user_123', { name => 'John', email => 'john@example.com' });
+  my $scalar   = 42;
+  my $list_ref = [ 1, 3, 5, 7, 9 ];
+  my $hash_ref = { name => 'John', email => 'john@example.com' };
 
-    # Store with custom TTL (5 minutes)
-    $cache->set('session_abc', $data, 300);
+  # Store some data for 15 minutes
+  $cache->set('age'     , $scalar  , time() + 900);
+  $cache->set('ids'     , $list_ref, time() + 900);
+  $cache->set('user:123', $hash_ref, time() + 900);
 
-    # Retrieve a value
-    my $user = $cache->get('user_123');
+  # Retrieve a value
+  my $user = $cache->get('user:123');
 
-    # Delete a value
-    $cache->delete('user_123');
+  # Delete a value
+  $cache->delete('user:123');
 
-    # Get cache statistics
-    my $count = $cache->cached_item_count();
-    my $keys  = $cache->cached_item_keys();
+  # Get cache statistics
+  my $count = $cache->cached_item_count();
+  my $keys  = $cache->cached_item_keys();
 
-    # Cleanup expired entries
-    $cache->remove_expired_entries();
+  # Cleanup expired entries
+  $cache->remove_expired_entries();
 
-    # Empty entire cache
-    $cache->empty_cache();
+  # Empty entire cache
+  $cache->empty_cache();
 
 =head1 DESCRIPTION
 
@@ -327,8 +330,6 @@ has expired.
 Stores a value in the cache. C<$expires> is the time-to-live in seconds.
 If C<$expires> is less than 100000, it's treated as relative (seconds from now).
 If C<$expires> is 100000 or greater, it's treated as an absolute Unix timestamp.
-
-Default TTL is 3600 seconds (1 hour).
 
 Returns true on success.
 
