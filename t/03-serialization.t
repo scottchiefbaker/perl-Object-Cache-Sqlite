@@ -15,38 +15,28 @@ END {
 
 use Object::Cache::Sqlite;
 
-# Test 1: Storable mode
-my $db_file_storable = File::Spec->catfile($test_dir, 'storable.sqlite');
-my $cache_storable = Object::Cache::Sqlite->new(
-    db_file => $db_file_storable,
-    mode    => 'storable',
-);
-isa_ok($cache_storable, 'Object::Cache::Sqlite');
+# Test 1: Create cache object (default JSON serialization)
+my $db_file = File::Spec->catfile($test_dir, 'cache.sqlite');
+my $cache = Object::Cache::Sqlite->new(db_file => $db_file);
+isa_ok($cache, 'Object::Cache::Sqlite');
 
-# Test 2: Set and get with Storable
+# Test 2: Set and get a complex nested data structure
 my $data = { nested => { deep => [1, 2, 3] } };
-ok($cache_storable->set('key1', $data), 'Set with Storable');
-is_deeply($cache_storable->get('key1'), $data, 'Get with Storable');
+ok($cache->set('key1', $data), 'Set complex data');
+is_deeply($cache->get('key1'), $data, 'Get complex data');
 
-# Test 3: JSON mode
-my $db_file_json = File::Spec->catfile($test_dir, 'json.sqlite');
-my $cache_json = Object::Cache::Sqlite->new(
-    db_file => $db_file_json,
-    mode    => 'json',
-);
-isa_ok($cache_json, 'Object::Cache::Sqlite');
+# Test 3: Set and get an undef value
+ok($cache->set('undef_key', undef), 'Set undef value');
+is($cache->get('undef_key'), undef, 'Get undef value');
 
-# Test 4: Set and get with JSON
-ok($cache_json->set('key1', $data), 'Set with JSON');
-is_deeply($cache_json->get('key1'), $data, 'Get with JSON');
+# Test 4: Set and get an empty hash
+my $empty = {};
+ok($cache->set('empty_hash', $empty), 'Set empty hash');
+is_deeply($cache->get('empty_hash'), $empty, 'Get empty hash');
 
-# Test 5: Auto-detect mode (default)
-my $db_file_auto = File::Spec->catfile($test_dir, 'auto.sqlite');
-my $cache_auto = Object::Cache::Sqlite->new(db_file => $db_file_auto);
-isa_ok($cache_auto, 'Object::Cache::Sqlite');
-
-# Test 6: Set and get with auto-detect
-ok($cache_auto->set('key1', $data), 'Set with auto-detect');
-is_deeply($cache_auto->get('key1'), $data, 'Get with auto-detect');
+# Test 5: Set and get an empty array
+my $empty_arr = [];
+ok($cache->set('empty_arr', $empty_arr), 'Set empty array');
+is_deeply($cache->get('empty_arr'), $empty_arr, 'Get empty array');
 
 done_testing();
