@@ -43,7 +43,7 @@ sub _init_db {
 	$sth->execute();
 
 	my $table_exists = $sth->fetchrow_array();
-	$sth->finish();
+
 
 	if (!$table_exists) {
 		$dbh->do("CREATE TABLE cache (
@@ -94,7 +94,7 @@ sub get {
 	$sth->execute($key);
 
 	my ($value, $expire_time) = $sth->fetchrow_array();
-	$sth->finish();
+
 
 	if (!defined $value) {
 		return undef;
@@ -132,7 +132,7 @@ sub set {
 	my $data   = $self->_store_value($value);
 	my $sth    = $dbh->prepare("REPLACE INTO cache (CreateTime, ExpireTime, Key, Value) VALUES (?, ?, ?, ?)");
 	my $result = $sth->execute($now, $expires, $key, $data);
-	$sth->finish();
+
 
 	return $result ? 1 : 0;
 }
@@ -145,7 +145,7 @@ sub delete {
 	my $dbh    = $self->{dbh};
 	my $sth    = $dbh->prepare("DELETE FROM cache WHERE Key = ?");
 	my $result = $sth->execute($key);
-	$sth->finish();
+
 
 	return $result ? 1 : 0;
 }
@@ -160,7 +160,7 @@ sub cached_item_count {
 	$sth->execute($now);
 
 	my ($count) = $sth->fetchrow_array();
-	$sth->finish();
+
 
 	return $count // 0;
 }
@@ -179,7 +179,7 @@ sub cached_item_keys {
 		push @keys, $key;
 	}
 
-	$sth->finish();
+
 
 	return \@keys;
 }
@@ -195,7 +195,7 @@ sub remove_expired_entries {
 	my $sth = $dbh->prepare("DELETE FROM cache WHERE ExpireTime < ?");
 	$sth->execute($now);
 	my $deleted = $sth->rows;
-	$sth->finish();
+
 
 	if ($vacuum && $deleted > 0) {
 		$self->vacuum();
@@ -221,7 +221,7 @@ sub empty_cache {
 	$sth->execute();
 
 	my $deleted = $sth->rows;
-	$sth->finish();
+
 
 	$self->vacuum();
 
