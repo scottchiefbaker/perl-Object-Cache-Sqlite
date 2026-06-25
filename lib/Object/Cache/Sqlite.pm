@@ -12,12 +12,13 @@ our $VERSION = 'v0.1.1';
 sub new {
 	my ($class, %args) = @_;
 
-	my $db_file = delete $args{db_file} or croak "db_file is required";
+	my $db_file = $args{db_file} or croak("db_file is required");
+	my $silent  = $args{silent} // 1;
 
 	my $self = {
 		db_file => $db_file,
 		dbh     => undef,
-		silent  => delete $args{silent} // 1,
+		silent  => $silent,
 	};
 
 	bless $self, $class;
