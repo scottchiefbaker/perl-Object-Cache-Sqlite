@@ -2,21 +2,15 @@ use strict;
 use warnings;
 use Test::More;
 use File::Spec;
-use File::Path qw(rmtree);
+use File::Temp;
 
 # Create temp directory for test databases
-my $test_dir = File::Spec->catdir(File::Spec->tmpdir(), 'obj_cache_sqlite_serial_test_$$');
-mkdir $test_dir unless -d $test_dir;
-
-# Cleanup on exit
-END {
-    rmtree($test_dir) if -d $test_dir;
-}
+my $tmp = File::Temp->newdir('obj_cache_sqlite_serial_test_XXXX');
 
 use Object::Cache::Sqlite;
 
 # Test 1: Create cache object (default JSON serialization)
-my $db_file = File::Spec->catfile($test_dir, 'cache.sqlite');
+my $db_file = File::Spec->catfile("$tmp", 'cache.sqlite');
 my $cache = Object::Cache::Sqlite->new(db_file => $db_file);
 isa_ok($cache, 'Object::Cache::Sqlite');
 

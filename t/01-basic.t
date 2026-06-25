@@ -2,17 +2,10 @@ use strict;
 use warnings;
 use Test::More;
 use File::Spec;
-use File::Temp qw(tempfile);
-use File::Path qw(rmtree);
+use File::Temp;
 
 # Create temp directory for test databases
-my $test_dir = File::Spec->catdir(File::Spec->tmpdir(), 'obj_cache_sqlite_test_$$');
-mkdir $test_dir unless -d $test_dir;
-
-# Cleanup on exit
-END {
-    rmtree($test_dir) if -d $test_dir;
-}
+my $tmp = File::Temp->newdir('obj_cache_sqlite_test_XXXX');
 
 # Test 1: Module loads
 use_ok('Object::Cache::Sqlite');
@@ -22,7 +15,7 @@ eval { Object::Cache::Sqlite->new() };
 like($@, qr/db_file is required/, 'Constructor requires db_file');
 
 # Test 3: Create cache object
-my $db_file = File::Spec->catfile($test_dir, 'test.sqlite');
+my $db_file = File::Spec->catfile("$tmp", 'test.sqlite');
 my $cache = Object::Cache::Sqlite->new(db_file => $db_file);
 isa_ok($cache, 'Object::Cache::Sqlite');
 
@@ -60,16 +53,16 @@ is($cache->get('key2'), undef, 'Deleted key returns undef');
 
 # Test 12: Cached item count
 my $count = $cache->cached_item_count();
-ok($count >= 2, 'Cached item count is correct');
+is($count, 3, 'Cached item count is correct');
 
 # Test 13: Cached item keys
 my $keys = $cache->cached_item_keys();
 is(ref($keys), 'ARRAY', 'Cached item keys returns array reference');
-ok(scalar @$keys >= 2, 'Cached item keys has correct count');
+is(scalar @$keys, 3, 'Cached item keys has correct count');
 
 # Test 14: Empty cache
 my $deleted = $cache->empty_cache();
-ok($deleted > 0, 'Empty cache returns deleted count');
+is($deleted, 3, 'Empty cache returns deleted count');
 is($cache->cached_item_count(), 0, 'Cache is empty after empty_cache');
 
 # Test 15: Init DB
