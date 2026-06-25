@@ -34,7 +34,7 @@ is($cache->get('short_lived'), undef, 'Expired value returns undef');
 
 # Test 5: Set with absolute timestamp in the past
 my $past_time = time() - 100;
-ok($cache->set('past_expiry', 'old data', $past_time), 'Set with past absolute timestamp');
+is($cache->set('past_expiry', 'old data', $past_time), undef, 'Set with past absolute timestamp');
 
 # Test 6: Past timestamp value returns undef
 is($cache->get('past_expiry'), undef, 'Past timestamp value returns undef');

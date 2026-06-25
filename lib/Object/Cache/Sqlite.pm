@@ -116,6 +116,10 @@ sub set {
         $expires = time() + $expires;
     }
 
+    if ($expires < time()) {
+        return undef;
+    }
+
     my $dbh = $self->{dbh};
     my $now = time();
 
