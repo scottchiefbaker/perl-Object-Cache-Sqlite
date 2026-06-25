@@ -113,7 +113,7 @@ manually cleaned with remove\_expired\_entries().
 
 ## Author
 
-Scott Baker, &lt;scott@perturb.org&lt;gt>
+Scott Baker, &lt;scott@perturb.org&gt;
 
 ## License and Copyright
 
