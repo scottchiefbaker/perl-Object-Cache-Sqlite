@@ -123,7 +123,7 @@ sub set {
 	}
 
 	if ($expires < time()) {
-		return undef;
+		return 0;
 	}
 
 	my $dbh = $self->{dbh};
