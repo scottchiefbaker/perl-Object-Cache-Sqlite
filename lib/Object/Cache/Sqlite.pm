@@ -7,7 +7,7 @@ use Carp qw(croak);
 use DBI;
 use Cpanel::JSON::XS;
 
-our $VERSION = 'v0.1.2';
+our $VERSION = 'v0.1.3';
 
 my $JSON = Cpanel::JSON::XS->new->utf8->allow_nonref;
 
