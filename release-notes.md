@@ -16,7 +16,7 @@
 `prove -lrf`
 
 ### Build the README from the POD
-`pod2github lib/Object/Cache/Sqlite.pm > README.md`
+`pod2github --no-title-case lib/Object/Cache/Sqlite.pm > README.md`
 
 ### Make the .tar.gz
 `make tardist`
