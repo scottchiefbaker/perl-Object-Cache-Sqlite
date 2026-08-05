@@ -304,16 +304,6 @@ Object::Cache::Sqlite provides a simple, fast object cache backed by SQLite.
 Data is automatically expired based on TTL values. Uses Cpanel::JSON::XS
 for fast, portable serialization.
 
-=head1 SEE ALSO
-
-=over 4
-
-=item Cache::File::Simple
-
-A simple file-based cache that stores serialized data in individual files.
-
-=back
-
 =head1 CONSTRUCTOR
 
 =head2 new(%args)
@@ -393,6 +383,16 @@ Values 100000 or greater are treated as Unix timestamps.
 
 Expired entries are automatically cleaned up on cache hits and can be
 manually cleaned with remove_expired_entries().
+
+=head1 SEE ALSO
+
+=over 4
+
+=item Cache::File::Simple
+
+A simple file-based cache that stores serialized data in individual files.
+
+=back
 
 =head1 AUTHOR
 
