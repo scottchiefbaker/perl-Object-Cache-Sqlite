@@ -20,11 +20,13 @@ $cache->set('age'     , $scalar  , time() + 900);
 $cache->set('ids'     , $list_ref, time() + 900);
 $cache->set('user:123', $hash_ref, time() + 900);
 
+my $cache_key = "user:123";
+
 # Retrieve a value
-my $user = $cache->get('user:123');
+my $user = $cache->get($cache_key);
 
 # Delete a value
-$cache->delete('user:123');
+$cache->delete($cache_key);
 
 # Get cache statistics
 my $count = $cache->cached_item_count();
@@ -33,7 +35,7 @@ my $keys  = $cache->cached_item_keys();
 # Cleanup expired entries
 $cache->remove_expired_entries();
 
-# Empty entire cache
+# Clear entire cache
 $cache->empty_cache();
 ```
 
@@ -113,7 +115,7 @@ manually cleaned with remove\_expired\_entries().
 
 ## Author
 
-Scott Baker, &lt;scott@perturb.org&gt;
+Scott Baker - https://www.perturb.org/
 
 ## License and Copyright
 

@@ -280,11 +280,13 @@ Object::Cache::Sqlite - SQLite-based object cache with automatic expiration
   $cache->set('ids'     , $list_ref, time() + 900);
   $cache->set('user:123', $hash_ref, time() + 900);
 
+  my $cache_key = "user:123";
+
   # Retrieve a value
-  my $user = $cache->get('user:123');
+  my $user = $cache->get($cache_key);
 
   # Delete a value
-  $cache->delete('user:123');
+  $cache->delete($cache_key);
 
   # Get cache statistics
   my $count = $cache->cached_item_count();
@@ -293,7 +295,7 @@ Object::Cache::Sqlite - SQLite-based object cache with automatic expiration
   # Cleanup expired entries
   $cache->remove_expired_entries();
 
-  # Empty entire cache
+  # Clear entire cache
   $cache->empty_cache();
 
 =head1 DESCRIPTION
@@ -384,7 +386,7 @@ manually cleaned with remove_expired_entries().
 
 =head1 AUTHOR
 
-Scott Baker, E<lt>scott@perturb.org<gt>
+Scott Baker - https://www.perturb.org/
 
 =head1 LICENSE AND COPYRIGHT
 
