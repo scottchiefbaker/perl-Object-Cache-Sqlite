@@ -1,8 +1,8 @@
-## Name
+## NAME
 
 Object::Cache::Sqlite - SQLite-based object cache with automatic expiration
 
-## Synopsis
+## SYNOPSIS
 
 ```perl
 use Object::Cache::Sqlite;
@@ -15,12 +15,12 @@ my $scalar   = 42;
 my $list_ref = [ 1, 3, 5, 7, 9 ];
 my $hash_ref = { name => 'John', email => 'john@example.com' };
 
+my $cache_key = "user:123";
+
 # Store some data for 15 minutes
 $cache->set('age'     , $scalar  , time() + 900);
 $cache->set('ids'     , $list_ref, time() + 900);
-$cache->set('user:123', $hash_ref, time() + 900);
-
-my $cache_key = "user:123";
+$cache->set($cache_key, $hash_ref, time() + 900);
 
 # Retrieve a value
 my $user = $cache->get($cache_key);
@@ -39,13 +39,13 @@ $cache->remove_expired_entries();
 $cache->empty_cache();
 ```
 
-## Description
+## DESCRIPTION
 
 Object::Cache::Sqlite provides a simple, fast object cache backed by SQLite.
 Data is automatically expired based on TTL values. Uses Cpanel::JSON::XS
 for fast, portable serialization.
 
-## Constructor
+## CONSTRUCTOR
 
 ### new(%args)
 
@@ -61,7 +61,7 @@ Optional arguments:
 
     If true, suppresses initialization messages. Default: 1
 
-## Methods
+## METHODS
 
 ### get($key)
 
@@ -98,7 +98,7 @@ runs SQLite `VACUUM` to reclaim space.
 Deletes ALL entries from the cache and runs `VACUUM`. Returns the number
 of deleted entries.
 
-## Expiration
+## EXPIRATION
 
 Cache entries can have two types of expiration:
 
@@ -113,17 +113,17 @@ Cache entries can have two types of expiration:
 Expired entries are automatically cleaned up on cache hits and can be
 manually cleaned with remove\_expired\_entries().
 
-## See Also
+## SEE ALSO
 
 - Cache::File::Simple
 
     A simple file-based cache that stores serialized data in individual files.
 
-## Author
+## AUTHOR
 
 Scott Baker - https://www.perturb.org/
 
-## License and Copyright
+## LICENSE AND COPYRIGHT
 
 This software is copyright (c) 2026 by Scott Baker.
 

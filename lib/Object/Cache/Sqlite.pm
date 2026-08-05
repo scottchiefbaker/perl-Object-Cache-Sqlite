@@ -275,12 +275,12 @@ Object::Cache::Sqlite - SQLite-based object cache with automatic expiration
   my $list_ref = [ 1, 3, 5, 7, 9 ];
   my $hash_ref = { name => 'John', email => 'john@example.com' };
 
+  my $cache_key = "user:123";
+
   # Store some data for 15 minutes
   $cache->set('age'     , $scalar  , time() + 900);
   $cache->set('ids'     , $list_ref, time() + 900);
-  $cache->set('user:123', $hash_ref, time() + 900);
-
-  my $cache_key = "user:123";
+  $cache->set($cache_key, $hash_ref, time() + 900);
 
   # Retrieve a value
   my $user = $cache->get($cache_key);
